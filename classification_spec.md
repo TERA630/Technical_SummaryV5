@@ -27,7 +27,24 @@
 - C 弱い戻り: VWAP上だが `dev25 < -2%`
 - E VWAP回復待ち: `VWAP -0.5〜-2%`、かつ `dev25 > -3%`
 - D トレンド弱い: `VWAP < -2%` または `dev25 < -3%`
-de
+
+## 層分離方針
+
+既存の動作を維持したまま、将来的にGitHub Codespacesなどのブラウザ開発環境でも動かせるよう、下記の責務へ分離する。
+
+- データ層: `technical_summary/data.py`
+  - YFinanceからの日足・分足取得、VWAP取得、銘柄行データの生成を担当する。
+- ドメイン層: `technical_summary/domain.py`
+  - RSI計算、主役スコア計算、分類判定を担当する。
+  - TkinterやYFinanceなどのGUI・外部取得依存を持たない。
+- GUI adapter層: `technical_summary/gui_tk.py`
+  - ローカル実行時のTkinterファイル選択だけを担当する。
+- CLI/実行制御層: `technical_summary/cli.py`, `technical_summary/app.py`
+  - GitHub CodespacesなどTkinterが使えない環境では、入力Markdownを引数で指定して実行する。
+- 互換入口: `Technical_SummaryV5.py`
+  - 既存の `python Technical_SummaryV5.py` 実行方法を残す。
+  - 引数なしはTkinter、引数ありはCLI相当の入力ファイル指定として動作する。
+
 ## 作業分割案
 
 1. 分類に必要なVWAP乖離率を追加し、分類ロジックを新条件へ差し替える。
@@ -77,4 +94,15 @@ de
   - `VWAP == -0.5%` はA1/A2とEが重なるため、A1/A2を優先する。
   - 明示条件に入らない代表帯を確認し、最終フォールバックは `D.トレンド弱い` として扱う。
   - 2026-06-02: `unittest` で10件すべて成功。
-- [ ] 作業4: 実データ取得を含む動作確認。
+- [x] Refactor: データ層、ドメイン層、GUI adapter層、CLI/実行制御層を分離した。
+  - `Technical_SummaryV5.py` は互換入口として残し、既存の引数なし実行ではTkinterファイル選択を使う。
+  - `python Technical_SummaryV5.py input.md` と `python -m technical_summary.cli input.md` で、Tkinterなしの環境でも入力ファイルを指定できる。
+  - `test_classification.py` の参照を `Technical_SummaryV5` 相当に更新した。
+  - 2026-06-04: `python -m unittest -v` で10件すべて成功。
+  - 2026-06-04: `python -m technical_summary.cli --help` と `python -m compileall Technical_SummaryV5.py technical_summary` が成功。
+- [x] 作業4: 実データ取得を含む動作確認。
+  - 2026-06-04: `python -m technical_summary.cli _realdata_check_input.md` でトヨタ自動車 (7203)、ソニーグループ (6758) の実データ取得とMarkdown生成が成功。
+  - 初回確認で2行目の箇条書き記号 `-` が銘柄名に混ざる入力解析の問題を確認した。
+  - `technical_summary/parsing.py` を行単位の解析に修正し、箇条書きの連続行でも銘柄名に記号が混ざらないようにした。
+  - `test_parsing.py` を追加し、箇条書き入力と重複コード除外を確認した。
+  - 2026-06-04: `python -m unittest -v` で12件すべて成功。
