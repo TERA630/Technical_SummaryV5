@@ -1,6 +1,6 @@
 import unittest
 
-from Technical_SummaryV4 import classify_row
+from Technical_SummaryV5 import classify_row
 
 
 def row(dev25, vwap_dev_pct, rsi=60.0, main_score=0, is_main_stock=False):

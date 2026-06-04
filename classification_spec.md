@@ -2,7 +2,7 @@
 
 ## 目的
 
-`Technical_SummaryV4.py` がYFinanceから取得した日足・VWAP・RSIなどの指標を使い、監視銘柄を下記ラベルに分類したMarkdown表を作成する。
+`Technical_SummaryV5.py` がYFinanceから取得した日足・VWAP・RSIなどの指標を使い、監視銘柄を下記ラベルに分類したMarkdown表を作成する。
 
 ## 確認事項
 
